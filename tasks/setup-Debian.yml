@@ -1,0 +1,11 @@
+---
+- name: Ensure Varnish is installed.
+  apt:
+    name: "{{ varnish_package_name }}"
+    state: present
+
+- name: Ensure old role-managed Varnish NSCA systemd unit file is removed.
+  file:
+    path: /etc/systemd/system/varnishncsa.service
+    state: absent
+  when: varnish_systemd_config_path != '/etc/systemd/system'

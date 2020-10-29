@@ -1,0 +1,50 @@
+---
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure Varnish config path exists.
+  file:
+    path: "{{ varnish_config_path }}"
+    state: directory
+    mode: 0755
+
+- name: Copy Debian Jessie/Xenial specific Varnish configs (systemd).
+  template:
+    src: "{{ varnishncsa_systemd_config_file }}"
+    dest: "{{ varnishncsa_systemd_config_path }}/varnishncsa.service"
+    owner: root
+    group: root
+    mode: 0644
+  when: >
+    (ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 7) or
+    (ansible_distribution == 'Debian' and ansible_distribution_version|int >= 8) or
+    (ansible_distribution == 'Ubuntu' and ansible_distribution_version.split(".")[0]|int >= 16)
+  notify:
+    - reload systemd
+    - restart varnish
+
+- name: Ensure Varnishncsa is started and enabled on startup.
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  with_items: "{{ varnishncsa | default([]) }}"
+  when: >
+    varnish_enabled_services and (ansible_os_family != 'Debian' or
+    (ansible_os_family != 'Debian' and ansible_distribution_release != "xenial"))
+
+- name: Ensure Varnishncsa are started and enabled on startup (Xenial specific)
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    use: "service"
+  with_items: "{{ varnishncsa | default([]) }}"
+  when:
+    - (ansible_os_family == 'Debian' and ansible_distribution_release == "xenial")

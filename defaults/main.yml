@@ -1,0 +1,7 @@
+---
+varnish_package_name: "varnish"
+
+varnishncsa_systemd_config_file: varnishncsa.service.j2
+
+varnishncsa_exec_start: "/usr/bin/varnishncsa -a -w /var/log/varnish/varnishncsa.log -D -P /run/varnishncsa/varnishncsa.pid"
+
