@@ -5,7 +5,7 @@ After=varnish.service
 [Service]
 RuntimeDirectory=varnishncsa
 Type=forking
-PIDFile=/run/varnishncsa/varnishncsa.pid
+PIDFile={{ varnishncsa_pid_file }}
 User=varnishlog
 Group=varnish
 ExecStart={{ varnishncsa_exec_start }}

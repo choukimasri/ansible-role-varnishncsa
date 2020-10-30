@@ -8,4 +8,4 @@
   file:
     path: /etc/systemd/system/varnishncsa.service
     state: absent
-  when: varnish_systemd_config_path != '/etc/systemd/system'
+  when: varnishncsa_systemd_config_path != '/etc/systemd/system'
