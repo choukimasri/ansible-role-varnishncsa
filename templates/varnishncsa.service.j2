@@ -6,8 +6,8 @@ After=varnish.service
 RuntimeDirectory=varnishncsa
 Type=forking
 PIDFile={{ varnishncsa_pid_file }}
-User=varnishlog
-Group=varnish
+{{ 'User=' + varnishncsa_service_user if varnishncsa_create_user_for_service else '' }}
+{{ 'Group=varnish' if varnishncsa_create_user_for_service else ''}}
 ExecStart={{ varnishncsa_exec_start }}
 ExecReload=/bin/kill -HUP $MAINPID
 

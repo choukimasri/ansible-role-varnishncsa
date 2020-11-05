@@ -3,5 +3,22 @@ varnish_package_name: "varnish"
 
 varnishncsa_systemd_config_file: varnishncsa.service.j2
 
-varnishncsa_exec_start: "/usr/bin/varnishncsa -a -w /var/log/varnish/varnishncsa.log -D"
+varnishncsa_exec_start: "/usr/bin/varnishncsa -a -w /var/log/varnish/varnishncsa.log -D -f /etc/varnish/varnishncsa.vlf -P /run/varnishncsa/varnishncsa.pid"
+
 varnishncsa_pid_file: "/run/varnishncsa/varnishncsa.pid"
+
+varnish_config_path: "/etc/varnish"
+
+varnishncsa_log_config_file: varnishncsa.vlf.j2
+
+varnishncsa_create_output_file: true
+
+varnishncsa_output_dir: /var/log/varnish
+
+varnishncsa_output_file: varnishncsa.log
+
+varnishncsa_log_format: '%h %l %u %t "%r" %s %b "%{Referer}i" "%{User-agent}i"'
+
+varnishncsa_create_user_for_service: false
+
+varnishncsa_service_user: varnishlog

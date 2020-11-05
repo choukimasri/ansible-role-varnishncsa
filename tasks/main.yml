@@ -14,7 +14,57 @@
     state: directory
     mode: 0755
 
-- name: Copy Debian Jessie/Xenial specific Varnish configs (systemd).
+- name: Add the user 'varnishncsa_user' if needed
+  user:
+    name: "{{ varnishncsa_service_user }}"
+    group: varnish
+  when: varnishncsa_create_user_for_service
+
+- name: Ensure Varnishncsa output dir exists.
+  file:
+    path: "{{ varnishncsa_output_dir }}"
+    state: directory
+    mode: 0755
+    recurse: yes
+  when: varnishncsa_create_output_file and (varnishncsa_create_user_for_service == 'false')
+
+- name: Ensure Varnishncsa output file exists.
+  file:
+    path: "{{ varnishncsa_output_dir }}/{{ varnishncsa_output_file }}"
+    state: touch
+    mode: 0755
+  when: varnishncsa_create_output_file and (varnishncsa_create_user_for_service == 'false')
+
+- name: Ensure Varnishncsa output dir exists with user permissons.
+  file:
+    path: "{{ varnishncsa_output_dir }}"
+    state: directory
+    owner: "{{ varnishncsa_service_user }}"
+    group: varnish
+    recurse: yes
+    mode: 0755
+  become: yes
+  when: varnishncsa_create_output_file and varnishncsa_create_user_for_service
+
+- name: Ensure Varnishncsa output file exists with user permissons.
+  file:
+    path: "{{ varnishncsa_output_dir }}/{{ varnishncsa_output_file }}"
+    state: touch
+    owner: "{{ varnishncsa_service_user }}"
+    group: varnish
+    mode: 0755
+  become: yes
+  when: varnishncsa_create_output_file and varnishncsa_create_user_for_service
+
+- name: Copy Debian custom Varnishncsa log format file.
+  template:
+    src: "{{ varnishncsa_log_config_file }}"
+    dest: "{{ varnish_config_path }}/varnishncsa.vlf"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy Debian Jessie/Xenial specific Varnishncsa configs (systemd).
   template:
     src: "{{ varnishncsa_systemd_config_file }}"
     dest: "{{ varnishncsa_systemd_config_path }}/varnishncsa.service"
@@ -27,7 +77,7 @@
     (ansible_distribution == 'Ubuntu' and ansible_distribution_version.split(".")[0]|int >= 16)
   notify:
     - reload systemd
-    - restart varnish
+    - restart varnishncsa
 
 - name: Ensure Varnishncsa is started and enabled on startup.
   service:
@@ -39,7 +89,7 @@
     varnish_enabled_services and (ansible_os_family != 'Debian' or
     (ansible_os_family != 'Debian' and ansible_distribution_release != "xenial"))
 
-- name: Ensure Varnishncsa are started and enabled on startup (Xenial specific)
+- name: Ensure Varnishncsa is started and enabled on startup (Xenial specific)
   service:
     name: "{{ item }}"
     state: started
